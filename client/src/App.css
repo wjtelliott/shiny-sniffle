@@ -1,0 +1,27 @@
+body {
+  background-color: #a8e2ff;
+}
+
+.App {
+  text-align: center;
+}
+
+#navbar-container {
+  background-color: #e0e0e0;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+h1 {
+  display: inline !important;
+  font-size: 1.75em !important;
+  text-align: right !important;
+  margin-right: 1em !important;
+  font-family: "Cascadia Code", monospace !important;
+  align-self: center !important;
+}
+
+h2 {
+  font-size: 2em !important;
+}
