@@ -26,11 +26,16 @@ userQueries["userExists"] = async (name) => {
   return response?.rows?.length > 0;
 };
 
-userQueries["createUser"] = async (name, pwd) => {
+userQueries["createUser"] = async (
+  name,
+  pwd,
+  hash = "nulltoken",
+  expireTime = "0"
+) => {
   if (await userQueries.userExists(name)) return false;
   return await queryWithError(
     "INSERT INTO users (user_name, user_hash, user_token, user_expire) VALUES ($1, $2, $3, $4)",
-    [name, pwd, "nulltoken", "0"]
+    [name, pwd, hash, expireTime]
   );
 };
 
@@ -48,6 +53,14 @@ userQueries["checkPassword"] = async (name, pwd) => {
   );
 
   return response?.rows?.[0]?.user_hash === pwd;
+};
+
+userQueries["getNameAndHash"] = async (name) => {
+  const response = await query(
+    "SELECT user_name, user_hash FROM users WHERE user_name=$1",
+    [name]
+  );
+  return response?.rows?.[0];
 };
 
 userQueries["getTokenData"] = async (name) => {
