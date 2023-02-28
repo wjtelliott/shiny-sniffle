@@ -16,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(buildPath));
 app.use(logger("dev"));
 app.use(cors());
+app.use(express.json());
 
 // ROUTES & SERVE CLIENT BUILD
 app.use("/api", usersController);

@@ -1,9 +1,6 @@
 const { Pool } = require("pg");
 const client = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
 });
 
 // DEFAULT QUERIES
@@ -32,8 +29,8 @@ userQueries["userExists"] = async (name) => {
 userQueries["createUser"] = async (name, pwd) => {
   if (await userQueries.userExists(name)) return false;
   return await queryWithError(
-    "INSERT INTO users (user_name, user_hash) VALUES ($1, $2)",
-    [name, pwd]
+    "INSERT INTO users (user_name, user_hash, user_token, user_expire) VALUES ($1, $2, $3, $4)",
+    [name, pwd, "nulltoken", "0"]
   );
 };
 
@@ -51,6 +48,21 @@ userQueries["checkPassword"] = async (name, pwd) => {
   );
 
   return response?.rows?.[0]?.user_hash === pwd;
+};
+
+userQueries["getTokenData"] = async (name) => {
+  const response = await query(
+    "SELECT user_token, user_expire FROM users WHERE user_name=$1",
+    [name]
+  );
+  return response?.rows?.[0];
+};
+
+userQueries["getAllData"] = async (name) => {
+  const response = await query("SELECT * FROM users WHERE user_name=$1", [
+    name,
+  ]);
+  return response;
 };
 
 module.exports = {
