@@ -60,3 +60,84 @@ in that order.
   npm run build **winbuild for windows**
   npm run start
 ```
+
+## Routing Reference
+
+### Client UI / Webpage
+
+```http
+  GET *
+```
+
+Serves React webpage `index.html` from `/shiny-sniffle/client/build/`
+
+### API sanity check
+
+```http
+  GET /api/sanity
+```
+
+Returns JSON response `{ message: "backend is alive - users route }`
+
+### Create new user
+
+```http
+  POST /api/new
+```
+
+| Parameter  | Type     | Description                          |
+| :--------- | :------- | :----------------------------------- |
+| `name`     | `string` | **Required**. Name for this user     |
+| `password` | `string` | **Required**. Password for this user |
+
+Creates a new user if the supplied `name` is not already taken.
+Logs in this user with a one hour token.
+
+Returns JSON response `{ token, expireTime, name }`
+
+### Login
+
+```http
+  POST /api/login
+```
+
+| Parameter  | Type     | Description                          |
+| :--------- | :------- | :----------------------------------- |
+| `name`     | `string` | **Required**. Name for this user     |
+| `password` | `string` | **Required**. Password for this user |
+
+Login a user with a one hour token for the supplied `name` if the
+password matches.
+
+Returns JSON response `{ token, expireTime }` or a `403` JSON error message
+
+### Testing a token
+
+```http
+  GET /api/test-token
+```
+
+| Header  | Type     | Description                               |
+| :------ | :------- | :---------------------------------------- |
+| `name`  | `string` | **Required**. Name for this user          |
+| `token` | `string` | **Required**. Current token for this user |
+
+Checks whether the supplied token is valid for this user and
+not expired.
+
+Returns JSON response message or `404` error whether the token is valid or not.
+
+### Logout
+
+```http
+  POST /api/logout
+```
+
+| Parameter | Type     | Description                               |
+| :-------- | :------- | :---------------------------------------- |
+| `name`    | `string` | **Required**. Name for this user          |
+| `token`   | `string` | **Required**. Current token for this user |
+
+Logout a user if the token is valid and not expired.
+
+Returns JSON response message or `404` error whether the token is valid or not.
