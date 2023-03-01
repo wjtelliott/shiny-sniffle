@@ -46,6 +46,17 @@ userQueries["loginUser"] = async (name, token, time) => {
   );
 };
 
+userQueries["logoutUser"] = async (name) =>
+  await userQueries.loginUser(name, "nulltoken", "0");
+
+// {
+//   return await queryWithError(
+//     "UPDATE users SET user_token = $1, user_expire = $2 WHERE user_name = $3",
+//     ["nulltoken", "0", name]
+//   );
+// };
+
+//! unused
 userQueries["checkPassword"] = async (name, pwd) => {
   const response = await query(
     "SELECT user_hash FROM users WHERE user_name=$1",

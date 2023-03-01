@@ -4,7 +4,7 @@ const {
   generateUserToken,
   hashUserPassword,
   getTokenExpirationTime,
-} = require("./util");
+} = require("./users_util");
 
 router.get("/sanity", async (_, res) => {
   console.log("[LOG] - Sanity test request - users route");
@@ -57,12 +57,12 @@ router.post("/login", async (req, res) => {
   };
 
   if (!name || !password || !(await checkUserHash()))
-    return res.json({ error: "invalid user/pass" });
+    return res.status(403).json({ error: "invalid user/pass" });
 
-  // get user expiration time
+  // get new user expiration time
   const expireTime = getTokenExpirationTime(new Date().getTime());
 
-  // generate token
+  // generate new token
   const token = generateUserToken();
 
   await db.loginUser(name, token, expireTime);
@@ -71,6 +71,34 @@ router.post("/login", async (req, res) => {
     token,
     expireTime,
   });
+});
+
+router.post("/logout", async (req, res) => {
+  console.log(`[LOG] - Attempting to log out user: ${req.body.name}`);
+
+  const { name, token } = req.body;
+
+  const invalidToken = () =>
+    res.status(404).json({ error: "invalid or expired token" });
+
+  //check valid token
+  if (!name || !token) return invalidToken();
+
+  const userTokenData = await db.getTokenData(name);
+  if (!userTokenData) return invalidToken();
+
+  // check token is valid
+  if (userTokenData.user_token !== token) return invalidToken();
+
+  // check token is not expired
+  const now = new Date().getTime();
+  if (now > userTokenData.user_expire) return invalidToken();
+
+  //log out user
+  console.log(`[LOG] - User is logged out`);
+  await db.logoutUser(name);
+
+  res.status(200).json({ message: "You have been logged out." });
 });
 
 router.get("/test-token", async (req, res) => {
