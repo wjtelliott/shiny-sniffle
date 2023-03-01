@@ -1,3 +1,5 @@
+const crypt = require("crypto");
+
 const getTokenExpirationTime = (time) => time + 1000 * 60 * 60; // one hour
 const hashUserPassword = (pwd, seed = 0) => {
   let h1 = 0xdeadbeef ^ seed,
@@ -17,6 +19,11 @@ const hashUserPassword = (pwd, seed = 0) => {
 
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
+const createHash = (input, salt = "salty?", type = "md5") => {
+  const hash = crypt.createHash(type);
+  hash.update(input);
+  return hash.digest("hex");
+};
 const generateUserToken = () => {
   const str = [...Array(Math.floor(Math.random() * 70) + 15).keys()]
     .map((_) => Math.floor(Math.random() * 16) + 106)
@@ -32,4 +39,5 @@ module.exports = {
   getTokenExpirationTime,
   hashUserPassword,
   generateUserToken,
+  createHash,
 };
