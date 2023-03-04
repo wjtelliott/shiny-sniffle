@@ -2,8 +2,10 @@ const router = require("express").Router();
 const db = require("../db");
 const {
   generateUserToken,
-  hashUserPassword,
+  saltUser,
   getTokenExpirationTime,
+  createHash,
+  checkUserPasswordMatch,
 } = require("./users_util");
 
 router.get("/sanity", async (_, res) => {
@@ -30,7 +32,7 @@ router.post("/new", async (req, res) => {
   const token = generateUserToken();
   const expireTime = getTokenExpirationTime(new Date().getTime());
 
-  await db.createUser(name, hashUserPassword(password), token, expireTime);
+  await db.createUser(name, createHash(password), token, expireTime);
 
   console.log(`[LOG] - User '${name}' was created and logged in`);
 
@@ -46,18 +48,15 @@ router.post("/login", async (req, res) => {
 
   const { name, password } = req.body;
 
-  const checkUserHash = async () => {
-    const userData = await db.getNameAndHash(name);
+  const invalidPasswordError = () =>
+    res.status(404).json({ error: "invalid user/pass" });
 
-    return !(
-      !userData ||
-      userData.user_name !== name ||
-      userData.user_hash !== hashUserPassword(password).toString()
-    );
-  };
+  if (!name?.trim()) return invalidPasswordError();
 
-  if (!name || !password || !(await checkUserHash()))
-    return res.status(403).json({ error: "invalid user/pass" });
+  const userData = await db.getNameAndHash(name);
+
+  if (!checkUserPasswordMatch(name, password, userData.user_hash))
+    return invalidPasswordError();
 
   // get new user expiration time
   const expireTime = getTokenExpirationTime(new Date().getTime());

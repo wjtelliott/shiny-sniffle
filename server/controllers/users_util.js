@@ -1,7 +1,7 @@
 const crypt = require("crypto");
 
 const getTokenExpirationTime = (time) => time + 1000 * 60 * 60; // one hour
-const hashUserPassword = (pwd, seed = 0) => {
+const saltUser = (pwd, seed = 0) => {
   let h1 = 0xdeadbeef ^ seed,
     h2 = 0x41c6ce57 ^ seed;
   for (let i = 0, ch; i < pwd.length; i++) {
@@ -32,12 +32,28 @@ const generateUserToken = () => {
   const seed = Math.floor(Math.random() * 150) + 96;
 
   // We can use the same 53bit hash for the token
-  return hashUserPassword(str, seed);
+  return saltUser(str, seed);
+};
+
+const checkUserPasswordMatch = (
+  userName,
+  userEnteredPassword,
+  userPasswordHash
+) => {
+  // if hash is null, or name is null, false
+  if (!userName?.trim() || !userEnteredPassword?.trim()) return false;
+
+  // salt with 53hash of name
+  const salt = saltUser(userName);
+  // create hash of entered password
+  const hash = createHash(userEnteredPassword, salt);
+  return hash === userPasswordHash;
 };
 
 module.exports = {
   getTokenExpirationTime,
-  hashUserPassword,
+  saltUser,
   generateUserToken,
   createHash,
+  checkUserPasswordMatch,
 };
