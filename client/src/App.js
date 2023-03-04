@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./App.css";
 import NavBar from "./components/NavBar";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
@@ -7,6 +6,8 @@ import CreateList from "./components/Lists/CreateList";
 import CreateRoute from "./components/Lists/CreateRoute";
 import ProfileSettings from "./components/ProfileSettings";
 import Home from "./components/Home";
+import Login from "./components/Login";
+import Logout from "./components/Logout";
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
           <Route path="/create-new" element={<CreateList />} />
           <Route path="/create-route" element={<CreateRoute />} />
           <Route path="/profile-settings" element={<ProfileSettings />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/logout" element={<Logout />} />
           <Route path="*" element={<Link to="/">GO HOME, 404</Link>} />
         </Routes>
       </BrowserRouter>

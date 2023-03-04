@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Shopping Cart App",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "client": "cd client && npm run start",
     "server": "cd server && npm run start",
     "build": "GENERATE_SOURCEMAP=false && (cd client && npm install && npm run build) && (cd ../server && npm install)",
@@ -12,5 +12,8 @@
     "start": "cd server && npm run start"
   },
   "author": "wjte",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.4.3"
+  }
 }

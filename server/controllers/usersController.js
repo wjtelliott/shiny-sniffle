@@ -6,6 +6,9 @@ const {
   getTokenExpirationTime,
   createHash,
   checkUserPasswordMatch,
+  sendErrorMessage,
+  log,
+  isValidToken,
 } = require("./users_util");
 
 router.get("/sanity", async (_, res) => {
@@ -32,7 +35,12 @@ router.post("/new", async (req, res) => {
   const token = generateUserToken();
   const expireTime = getTokenExpirationTime(new Date().getTime());
 
-  await db.createUser(name, createHash(password), token, expireTime);
+  await db.createUser(
+    name,
+    createHash(password, saltUser(name)),
+    token,
+    expireTime
+  );
 
   console.log(`[LOG] - User '${name}' was created and logged in`);
 
@@ -44,25 +52,25 @@ router.post("/new", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  console.log(`[LOG] - Attempting to login user: ${req.body?.name}`);
+  log("debug", `Attempting to login user: ${req.body?.name}`);
 
   const { name, password } = req.body;
 
-  const invalidPasswordError = () =>
-    res.status(404).json({ error: "invalid user/pass" });
-
-  if (!name?.trim()) return invalidPasswordError();
+  if (!name?.trim())
+    return sendErrorMessage(res, "Invalid username or password");
 
   const userData = await db.getNameAndHash(name);
 
   if (!checkUserPasswordMatch(name, password, userData.user_hash))
-    return invalidPasswordError();
+    return sendErrorMessage(res, "Invalid username or password");
 
   // get new user expiration time
   const expireTime = getTokenExpirationTime(new Date().getTime());
 
   // generate new token
   const token = generateUserToken();
+
+  log("debug", "User is logged in");
 
   await db.loginUser(name, token, expireTime);
 
@@ -73,28 +81,16 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/logout", async (req, res) => {
-  console.log(`[LOG] - Attempting to log out user: ${req.body.name}`);
+  log("debug", `Attempting to log out user: ${req.body.name}`);
 
   const { name, token } = req.body;
 
-  const invalidToken = () =>
-    res.status(404).json({ error: "invalid or expired token" });
-
   //check valid token
-  if (!name || !token) return invalidToken();
-
-  const userTokenData = await db.getTokenData(name);
-  if (!userTokenData) return invalidToken();
-
-  // check token is valid
-  if (userTokenData.user_token !== token) return invalidToken();
-
-  // check token is not expired
-  const now = new Date().getTime();
-  if (now > userTokenData.user_expire) return invalidToken();
+  if (!(await isValidToken(name, token, db)))
+    return sendErrorMessage(res, "Invalid or expired user token");
 
   //log out user
-  console.log(`[LOG] - User is logged out`);
+  log("debug", `User is logged out`);
   await db.logoutUser(name);
 
   res.status(200).json({ message: "You have been logged out." });
@@ -103,20 +99,12 @@ router.post("/logout", async (req, res) => {
 router.get("/test-token", async (req, res) => {
   const { name, token } = req.headers;
 
-  const invalidToken = () =>
-    res.status(404).json({ error: "invalid or expired token" });
+  log("debug", `User ${name} is attempting to validate their token`);
 
-  if (!name || !token) return invalidToken();
+  if (!(await isValidToken(name, token, db)))
+    return sendErrorMessage(res, "Invalid or expired user token");
 
-  const userTokenData = await db.getTokenData(name);
-  if (!userTokenData) return invalidToken();
-
-  // check token is valid
-  if (userTokenData.user_token !== token) return invalidToken();
-
-  // check token isn't expired
-  const now = new Date().getTime();
-  if (now > userTokenData.user_expire) return invalidToken();
+  log("debug", "Token is valid");
 
   res.status(200).json({ message: "token is valid" });
 });
@@ -124,6 +112,31 @@ router.get("/test-token", async (req, res) => {
 router.get("/user/:name", async (req, res) => {
   const userData = await db.getAllData(req.params.name);
   res.json(userData);
+});
+
+router.delete("/delete", async (req, res) => {
+  const { name, token } = req.headers;
+  log("debug", `Deleting user ${name}`);
+
+  //check valid token
+  if (!(await isValidToken(name, token, db)))
+    return sendErrorMessage(res, "Invalid or expired user token");
+
+  log("debug", "User Deleted");
+  await db.deleteUser(name);
+
+  res.status(200).json({ message: "User is deleted" });
+});
+
+router.put("/password", async (req, res) => {
+  const { name, token, password } = req.body;
+  log("debug", `User ${name} is changing their password`);
+
+  if (!(await isValidToken(name, token, db)))
+    return sendErrorMessage(res, "Invalid or expired user token");
+
+  await db.changePassword(name, createHash(password, saltUser(name)));
+  res.status(201).json({ message: "Password changed" });
 });
 
 module.exports = router;

@@ -19,9 +19,9 @@ const saltUser = (pwd, seed = 0) => {
 
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
-const createHash = (input, salt = "salty?", type = "md5") => {
+const createHash = (input, salt = "salty?", type = "sha256") => {
   const hash = crypt.createHash(type);
-  hash.update(input);
+  hash.update(input + salt);
   return hash.digest("hex");
 };
 const generateUserToken = () => {
@@ -50,10 +50,33 @@ const checkUserPasswordMatch = (
   return hash === userPasswordHash;
 };
 
+const sendErrorMessage = (res, msg, code = 404) => {
+  return res.status(code).json({ error: msg });
+};
+
+const log = (prefix, msg) => {
+  console.log(`${prefix} /> ${msg}`);
+};
+
+const isValidToken = async (name, token, db) => {
+  if (!name || !token) return false;
+  const userTokenData = await db.getTokenData(name);
+  if (!userTokenData) return false;
+  if (
+    userTokenData.user_token !== token ||
+    new Date().getTime() > userTokenData.user_expire
+  )
+    return false;
+  return true;
+};
+
 module.exports = {
   getTokenExpirationTime,
   saltUser,
   generateUserToken,
   createHash,
   checkUserPasswordMatch,
+  sendErrorMessage,
+  log,
+  isValidToken,
 };

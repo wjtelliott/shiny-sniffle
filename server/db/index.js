@@ -82,6 +82,17 @@ userQueries["getTokenData"] = async (name) => {
   return response?.rows?.[0];
 };
 
+userQueries["deleteUser"] = async (name) => {
+  await query("DELETE FROM users WHERE user_name=$1", [name]);
+};
+
+userQueries["changePassword"] = async (name, newHash) => {
+  return await queryWithError(
+    "UPDATE users SET user_hash = $1 WHERE user_name = $2",
+    [newHash, name]
+  );
+};
+
 userQueries["getAllData"] = async (name) => {
   const response = await query("SELECT * FROM users WHERE user_name=$1", [
     name,
