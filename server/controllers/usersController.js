@@ -61,7 +61,7 @@ router.post("/login", async (req, res) => {
 
   const userData = await db.getNameAndHash(name);
 
-  if (!checkUserPasswordMatch(name, password, userData.user_hash))
+  if (!userData || !checkUserPasswordMatch(name, password, userData?.user_hash))
     return sendErrorMessage(res, "Invalid username or password");
 
   // get new user expiration time
