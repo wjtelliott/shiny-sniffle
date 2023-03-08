@@ -4,6 +4,8 @@ const constants = {
   SESSION_EXPIRE: "expire",
   STORAGE_REMEMBER: "name-remember",
 
+  DEV_ENDPOINT: process.env.REACT_APP_DEV_ENDPOINT,
+
   NAVBAR_TITLE: "Shopping Cart",
   NAVBAR_OPTIONS: [
     [
