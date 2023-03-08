@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest",
     "client": "cd client && npm run start",
-    "server": "cd server && npm run start",
+    "server": "cd server && npm run devstart",
     "build": "GENERATE_SOURCEMAP=false && (cd client && npm install && npm run build) && (cd ../server && npm install)",
     "winbuild": "set \"GENERATE_SOURCEMAP=false\" && (cd client && npm install && npm run build) && (cd ../server && npm install)",
     "init": "(cd client && npm install) && (cd ../server && npm install)",
@@ -15,5 +15,9 @@
   "license": "ISC",
   "devDependencies": {
     "jest": "^29.4.3"
+  },
+  "dependencies": {
+    "concurrently": "^7.6.0",
+    "multiview": "^3.0.1"
   }
 }

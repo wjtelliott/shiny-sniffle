@@ -19,6 +19,8 @@ import {
   setSessionInfo,
   isLoggedIn,
 } from "./StorageUtil";
+import constants from "../Constants";
+const { DEV_ENDPOINT } = constants;
 
 const theme = createTheme();
 
@@ -39,7 +41,7 @@ export default function SignIn() {
     const formData = new FormData(event.currentTarget);
     const [name, password] = [formData.get("name"), formData.get("password")];
 
-    const response = await fetch("/api/login", {
+    const response = await fetch(`${DEV_ENDPOINT}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, password }),

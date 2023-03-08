@@ -13,6 +13,8 @@ import {
   isLoggedIn,
   getSessionUsername,
 } from "./StorageUtil";
+import constants from "../Constants";
+const { DEV_ENDPOINT } = constants;
 
 const theme = createTheme();
 
@@ -28,7 +30,7 @@ function Logout() {
     const name = getSessionUsername();
     const token = getSessionToken();
 
-    const response = await fetch("/api/logout", {
+    const response = await fetch(`${DEV_ENDPOINT}/api/logout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, token }),
