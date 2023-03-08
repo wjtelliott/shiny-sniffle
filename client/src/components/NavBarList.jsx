@@ -38,7 +38,8 @@ function NavBarList({ listItems, createLink }) {
     <List>
       {listItems.map(({ text, icon }, index) => {
         if (text == "Login" && isLoggedIn()) return null;
-        if (text == "Logout" && !isLoggedIn()) return null;
+        if ((text == "Logout" || text == "Profile Settings") && !isLoggedIn())
+          return null;
         return (
           <ListItem key={`listItem${text}${index}`} disablePadding>
             <Link

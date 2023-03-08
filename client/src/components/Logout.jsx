@@ -7,8 +7,12 @@ import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import * as util from "./StorageUtil";
-//import { getSessionToken, removeSessionData, isLoggedIn } from "./StorageUtil";
+import {
+  getSessionToken,
+  removeSessionData,
+  isLoggedIn,
+  getSessionUsername,
+} from "./StorageUtil";
 
 const theme = createTheme();
 
@@ -18,11 +22,11 @@ function Logout() {
   // send to db to log us out
   const nav = useNavigate();
 
-  const [sessionName, _] = useState(util.getSessionUsername());
+  const [sessionName, _] = useState(getSessionUsername());
 
   async function logoutUser() {
-    const name = util.getSessionUsername();
-    const token = util.getSessionToken();
+    const name = getSessionUsername();
+    const token = getSessionToken();
 
     const response = await fetch("/api/logout", {
       method: "POST",
@@ -35,12 +39,12 @@ function Logout() {
       // we can probably ignore logout errors here and just
       // remove our sessions items anyway
     }
-    util.removeSessionData();
+    removeSessionData();
     nav("/");
   }
 
   useEffect(() => {
-    if (!util.isLoggedIn()) nav("/");
+    if (!isLoggedIn()) nav("/");
     const abortController = new AbortController();
 
     const logoutTimer = setTimeout(() => {

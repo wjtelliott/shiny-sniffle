@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,7 +8,8 @@ import {
 } from "@mui/material";
 import NavBarSvg from "./NavBarSvg";
 import NavBarList from "./NavBarList";
-import NavBarOptions from "./NavBarOptions";
+import constants from "../Constants";
+const { NAVBAR_OPTIONS, NAVBAR_TITLE } = constants;
 
 function NavBar() {
   // We can let the menu open multiple directions, left by default
@@ -52,10 +52,10 @@ function NavBar() {
       onClick={toggleDrawer()}
       onKeyDown={toggleDrawer()}
     >
-      {NavBarOptions.map((navGroupOptions, index) => (
+      {NAVBAR_OPTIONS.map((navGroupOptions, index) => (
         <Box key={`navListGroup${index}`}>
           <NavBarList listItems={navGroupOptions} createLink={createLink} />
-          {index < NavBarOptions.length - 1 && <Divider />}
+          {index < NAVBAR_OPTIONS.length - 1 && <Divider />}
         </Box>
       ))}
     </Box>
@@ -69,7 +69,7 @@ function NavBar() {
       <Button onClick={toggleDrawer()} sx={{ borderRadius: "100%" }}>
         <NavBarSvg />
       </Button>
-      <Typography variant="h1">Shopping Cart</Typography>
+      <Typography variant="h1">{NAVBAR_TITLE}</Typography>
       <SwipeableDrawer
         anchor={"left"}
         open={drawerState["left"]}

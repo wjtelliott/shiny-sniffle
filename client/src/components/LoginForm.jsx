@@ -12,29 +12,26 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import * as util from "./StorageUtil";
-// import {
-//   getRememberedName,
-//   removeRememberedName,
-//   setRememberedName,
-//   setSessionInfo,
-//   isLoggedIn,
-// } from "./StorageUtil";
+import {
+  getRememberedName,
+  removeRememberedName,
+  setRememberedName,
+  setSessionInfo,
+  isLoggedIn,
+} from "./StorageUtil";
 
 const theme = createTheme();
 
 export default function SignIn() {
   const nav = useNavigate();
 
-  const [rememberedName, _] = useState(util.getRememberedName());
-  const [userInputName, setUserInputName] = useState(util.getRememberedName());
+  const [rememberedName, _] = useState(getRememberedName());
+  const [userInputName, setUserInputName] = useState(getRememberedName());
   const [loginResponse, setLoginResponse] = useState({});
 
   const handleRememberme = async (event) => {
     const isChecked = event?.target?.checked;
-    isChecked
-      ? util.setRememberedName(userInputName)
-      : util.removeRememberedName();
+    isChecked ? setRememberedName(userInputName) : removeRememberedName();
   };
 
   const handleSubmit = async (event) => {
@@ -52,7 +49,7 @@ export default function SignIn() {
 
     // Successful login attempt if we are supplied a token
     if (responseData?.token) {
-      util.setSessionInfo({
+      setSessionInfo({
         name,
         token: responseData.token,
         expire: responseData.expireTime,
@@ -67,7 +64,7 @@ export default function SignIn() {
   };
 
   useEffect(() => {
-    if (util.isLoggedIn()) nav("/");
+    if (isLoggedIn()) nav("/");
   }, []);
 
   return (

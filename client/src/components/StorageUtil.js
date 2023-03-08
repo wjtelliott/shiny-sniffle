@@ -1,7 +1,6 @@
-const SESSION_USERNAME = "name";
-const SESSION_TOKEN = "token";
-const SESSION_EXPIRE = "expire";
-const STORAGE_REMEMBER = "name-remember";
+import constants from "../Constants";
+const { SESSION_EXPIRE, SESSION_TOKEN, SESSION_USERNAME, STORAGE_REMEMBER } =
+  constants;
 
 function pushToStorage(key, value) {
   window.localStorage.setItem(key, value);
@@ -85,7 +84,7 @@ function removeRememberedName() {
 
 function isLoggedIn() {
   const [name, token] = [getSessionUsername(), getSessionToken()];
-  return !name || name == "null" || !token || token == "null";
+  return name && token && name != "null" && token != "null";
 }
 
 export {
