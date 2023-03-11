@@ -100,6 +100,13 @@ userQueries["getAllData"] = async (name) => {
   return response;
 };
 
+userQueries["deleteUser"] = async (name, token) => {
+  await query("DELETE FROM users WHERE user_name=$1 AND user_token=$2", [
+    name,
+    token,
+  ]);
+};
+
 module.exports = {
   query,
   queryWithError,
