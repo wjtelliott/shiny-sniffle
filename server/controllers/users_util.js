@@ -1,5 +1,4 @@
 const crypt = require("crypto");
-
 const getTokenExpirationTime = (time) => time + 1000 * 60 * 60; // one hour
 const saltUser = (pwd, seed = 0) => {
   let h1 = 0xdeadbeef ^ seed,
@@ -54,8 +53,10 @@ const sendErrorMessage = (res, msg, code = 404) => {
   return res.status(code).json({ error: msg });
 };
 
-const log = (prefix, msg) => {
-  console.log(`${prefix} /> ${msg}`);
+const log = async (prefix, msg) => {
+  // Don't log in test mode
+  if (process.env.NODE_ENV === "test") return;
+  process.stdout.write(`${prefix} /> ${msg}\n`);
 };
 
 const isValidToken = async (name, token, db) => {
@@ -63,7 +64,7 @@ const isValidToken = async (name, token, db) => {
   const userTokenData = await db.getTokenData(name);
   if (!userTokenData) return false;
   if (
-    userTokenData.user_token !== token ||
+    userTokenData.user_token != token?.toString() ||
     new Date().getTime() > userTokenData.user_expire
   )
     return false;

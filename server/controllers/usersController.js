@@ -12,12 +12,12 @@ const {
 } = require("./users_util");
 
 router.get("/sanity", async (_, res) => {
-  console.log("[LOG] - Sanity test request - users route");
+  log("[LOG]", "- Sanity test request - users route");
   res.status(200).json({ message: "backend is alive - users route" });
 });
 
 router.post("/new", async (req, res) => {
-  console.log(`[LOG] - Attempting to create new user: ${req.body?.name}`);
+  log(`[LOG]`, `- Attempting to create new user: ${req.body?.name}`);
 
   const throwUserError = (
     msg = "There was an error creating your account."
@@ -42,7 +42,7 @@ router.post("/new", async (req, res) => {
     expireTime
   );
 
-  console.log(`[LOG] - User '${name}' was created and logged in`);
+  log(`[LOG] - User '${name}' was created and logged in`);
 
   res.status(200).json({
     token,
@@ -136,7 +136,7 @@ router.put("/password", async (req, res) => {
     return sendErrorMessage(res, "Invalid or expired user token");
 
   await db.changePassword(name, createHash(password, saltUser(name)));
-  res.status(201).json({ message: "Password changed" });
+  res.status(200).json({ message: "Password changed" });
 });
 
 module.exports = router;

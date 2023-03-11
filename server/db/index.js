@@ -1,10 +1,18 @@
+const connectionString =
+  process.env.NODE_ENV === "test"
+    ? require("../localTestConfig").CONNECTION_STRING
+    : process.env.DATABASE_URL;
+
 const { Pool } = require("pg");
-const client = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const client = new Pool({ connectionString });
+
+const closeConnection = () => client.end();
 
 // DEFAULT QUERIES
-const query = async (text, params) => await client.query(text, params);
+const query = async (text, params) => {
+  const response = await client.query(text, params);
+  return response;
+};
 const queryWithError = async (text, params) => {
   /**
    * Use this query to create or insert data.
@@ -82,8 +90,12 @@ userQueries["getTokenData"] = async (name) => {
   return response?.rows?.[0];
 };
 
-userQueries["deleteUser"] = async (name) => {
-  await query("DELETE FROM users WHERE user_name=$1", [name]);
+// Use case: testing routes
+userQueries["updateUserToken"] = async (name, token, time) => {
+  return await queryWithError(
+    "UPDATE users SET user_token = $1, user_expire = $2 WHERE user_name = $3",
+    [token, time, name]
+  );
 };
 
 userQueries["changePassword"] = async (name, newHash) => {
@@ -97,18 +109,19 @@ userQueries["getAllData"] = async (name) => {
   const response = await query("SELECT * FROM users WHERE user_name=$1", [
     name,
   ]);
-  return response;
+  return response?.rows?.[0];
 };
 
 userQueries["deleteUser"] = async (name, token) => {
-  await query("DELETE FROM users WHERE user_name=$1 AND user_token=$2", [
-    name,
-    token,
-  ]);
+  const a = await query(
+    "DELETE FROM users WHERE user_name=$1 AND user_token=$2",
+    [name, token]
+  );
 };
 
 module.exports = {
   query,
   queryWithError,
+  closeConnection,
   ...userQueries,
 };

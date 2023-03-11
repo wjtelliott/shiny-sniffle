@@ -6,7 +6,7 @@ const {
   createHash,
   checkUserPasswordMatch,
   sendErrorMessage,
-} = require("./users_util");
+} = require("../users_util");
 
 describe("testing hashing", () => {
   it("tests correctly replicates a hash", () => {
