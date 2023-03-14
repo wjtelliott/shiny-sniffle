@@ -36,7 +36,10 @@ describe("usersController", () => {
   afterAll(async () => {
     // Check if the mock user still exists in the db
     const userExists = await db.userExists(mockUser.name);
-    if (!userExists) return;
+    if (!userExists) {
+      db.closeConnection();
+      return;
+    }
 
     // Log in the mock user to get token and delete from db
     const response = await request(app)
@@ -45,11 +48,6 @@ describe("usersController", () => {
     const testUserToken = response._body["token"];
     await db.deleteUser(mockUser.name, testUserToken);
     await db.closeConnection();
-  });
-
-  beforeEach(() => {
-    // await 1250ms to allow for db to update
-    jest.setTimeout(2250);
   });
 
   describe("sanity", () => {
@@ -66,11 +64,12 @@ describe("usersController", () => {
         { path: "/login", method: "post" },
         { path: "/logout", method: "post" },
         { path: "/test-token", method: "get" },
+        { path: "/delete", method: "delete" },
       ];
 
       routes.forEach((route) => {
         expect(
-          usersController.stack.find(
+          usersController.stack.some(
             (s) =>
               s.route.path.includes(route.path) && s.route.methods[route.method]
           )
@@ -80,7 +79,7 @@ describe("usersController", () => {
   });
 
   describe("sanity route", () => {
-    it("should return a sanity message", async () => {
+    it("tests should return a sanity message", async () => {
       const response = await request(app).get("/sanity");
 
       expect(response.status).toBe(200);
@@ -90,7 +89,7 @@ describe("usersController", () => {
   });
 
   describe("login route", () => {
-    it("tests should login a user, test will save token", async () => {
+    it("tests should login a user", async () => {
       const response = await request(app)
         .post("/login")
         .send({ name: mockUser.name, password: mockUser.password });
@@ -113,7 +112,7 @@ describe("usersController", () => {
   });
 
   describe("logout route", () => {
-    it("test should logout a user that is logged in", async () => {
+    it("tests should logout a user that is logged in", async () => {
       // log the user in to get a token
       const loginResponse = await request(app)
         .post("/login")
@@ -168,7 +167,7 @@ describe("usersController", () => {
       const loginResponse = await request(app)
         .post("/login")
         .send({ name: mockUser.name, password: mockUser.password });
-      const testUserToken = loginResponse._body["token"];
+      const testUserToken = loginResponse.body["token"];
 
       // test the token
       const response = await request(app)

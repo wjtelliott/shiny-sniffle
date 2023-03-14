@@ -9,7 +9,7 @@ const express = require("express"),
   cors = require("cors");
 
 // API CONTROLLERS
-const { usersController } = require("./controllers");
+const { usersController, listController } = require("./controllers");
 
 // MIDDLEWARE
 app.use(express.urlencoded({ extended: true }));
@@ -19,7 +19,8 @@ app.use(cors());
 app.use(express.json());
 
 // ROUTES & SERVE CLIENT BUILD
-app.use("/api", usersController);
+app.use("/api/users", usersController);
+app.use("/api/lists", listController);
 app.get("*", (_, res) => {
   res.sendFile(buildPath + "index.html");
 });

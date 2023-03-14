@@ -109,7 +109,7 @@ router.get("/test-token", async (req, res) => {
   res.status(200).json({ message: "token is valid" });
 });
 
-router.get("/user/:name", async (req, res) => {
+router.get("/:name", async (req, res) => {
   const userData = await db.getAllData(req.params.name);
   res.json(userData);
 });

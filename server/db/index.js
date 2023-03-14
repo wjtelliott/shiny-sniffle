@@ -1,3 +1,4 @@
+console.log(__dirname);
 const connectionString =
   process.env.NODE_ENV === "test"
     ? require("../localTestConfig").CONNECTION_STRING
@@ -53,16 +54,10 @@ userQueries["loginUser"] = async (name, token, time) => {
     [token, time, name]
   );
 };
-
 userQueries["logoutUser"] = async (name) =>
   await userQueries.loginUser(name, "nulltoken", "0");
-
-// {
-//   return await queryWithError(
-//     "UPDATE users SET user_token = $1, user_expire = $2 WHERE user_name = $3",
-//     ["nulltoken", "0", name]
-//   );
-// };
+userQueries["updateUserToken"] = async (name, token, time) =>
+  await userQueries.loginUser(name, token, time);
 
 //! unused
 userQueries["checkPassword"] = async (name, pwd) => {
@@ -90,14 +85,6 @@ userQueries["getTokenData"] = async (name) => {
   return response?.rows?.[0];
 };
 
-// Use case: testing routes
-userQueries["updateUserToken"] = async (name, token, time) => {
-  return await queryWithError(
-    "UPDATE users SET user_token = $1, user_expire = $2 WHERE user_name = $3",
-    [token, time, name]
-  );
-};
-
 userQueries["changePassword"] = async (name, newHash) => {
   return await queryWithError(
     "UPDATE users SET user_hash = $1 WHERE user_name = $2",
@@ -119,9 +106,68 @@ userQueries["deleteUser"] = async (name, token) => {
   );
 };
 
+// use-case: admin & testing
+userQueries["deleteUserAdmin"] = async (name) => {
+  return await queryWithError("DELETE FROM users WHERE user_name=$1", [name]);
+};
+
+// LIST QUERIES
+
+const listQueries = {};
+listQueries["createList"] = async (name, listItems, listOrder) => {
+  return await query(
+    "INSERT INTO grocery_lists (user_id, items, route_order) VALUES ((SELECT user_id FROM users WHERE user_name=$1), $2, $3) RETURNING list_id",
+    [name, listItems, listOrder]
+  );
+};
+
+listQueries["getList"] = async (name, token, listId) => {
+  const response = await query(
+    "SELECT items, route_order FROM grocery_lists WHERE user_id=(SELECT user_id FROM users WHERE user_name=$1) AND (SELECT user_token FROM users WHERE user_name=$1)=$2 AND list_id=$3",
+    [name, token, listId]
+  );
+  return response?.rows?.[0];
+};
+
+listQueries["getAllLists"] = async (name, token) => {
+  const response = await query(
+    "SELECT items, route_order FROM grocery_lists WHERE user_id=(SELECT user_id FROM users WHERE user_name=$1) AND (SELECT user_token FROM users WHERE user_name=$1)=$2",
+    [name, token]
+  );
+  return response?.rows;
+};
+
+listQueries["deleteAllLists"] = async (name, token) => {
+  return await queryWithError(
+    "DELETE FROM grocery_lists WHERE user_id=(SELECT user_id FROM users WHERE user_name=$1) AND (SELECT user_token FROM users WHERE user_name=$1)=$2",
+    [name, token]
+  );
+};
+
+listQueries["deleteList"] = async (name, token, listId) => {
+  return await queryWithError(
+    "DELETE FROM grocery_lists WHERE user_id=(SELECT user_id FROM users WHERE user_name=$1) AND (SELECT user_token FROM users WHERE user_name=$1)=$2 AND list_id=$3",
+    [name, token, listId]
+  );
+};
+
+listQueries["updateList"] = async (
+  name,
+  token,
+  listId,
+  listItems,
+  listOrder
+) => {
+  return await query(
+    "UPDATE grocery_lists SET items=$1, route_order=$2 WHERE user_id=(SELECT user_id FROM users WHERE user_name=$3) AND (SELECT user_token FROM users WHERE user_name=$3)=$4 AND list_id=$5 RETURNING list_id",
+    [listItems, listOrder, name, token, listId]
+  );
+};
+
 module.exports = {
   query,
   queryWithError,
   closeConnection,
   ...userQueries,
+  ...listQueries,
 };

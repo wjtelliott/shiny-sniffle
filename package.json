@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Shopping Cart App",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "client": "cd client && npm run start",
     "server": "cd server && npm run devstart",
     "build": "GENERATE_SOURCEMAP=false && (cd client && npm install && npm run build) && (cd ../server && npm install)",
